@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RoastData } from "@/lib/parseRoast";
 import { buildTwitterShareUrl } from "@/lib/share";
 
@@ -11,7 +11,14 @@ interface RoastResultProps {
 
 export function RoastResult({ data, onReset }: RoastResultProps) {
   const [copied, setCopied] = useState(false);
+  const [siteUrl, setSiteUrl] = useState("https://roastly.hussnicer.workers.dev");
   const { killerQuote, roast, clarityScore, scoreReason, fixes } = data;
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.origin) {
+      setSiteUrl(window.location.origin);
+    }
+  }, []);
 
   const getDamageBadge = (score: number) => {
     if (score < 30) {
@@ -47,10 +54,10 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
   };
 
   const badge = getDamageBadge(clarityScore);
-  const shareUrl = buildTwitterShareUrl(clarityScore, killerQuote);
+  const shareUrl = buildTwitterShareUrl(clarityScore, killerQuote, siteUrl);
 
   const handleCopy = async () => {
-    const textToCopy = `Roastly Score: ${clarityScore}/100 (${badge.text})\n\n"${killerQuote}"\n\nFull Roast:\n${roast}\n\n10-Minute Fixes:\n1. ${fixes[0]}\n2. ${fixes[1]}\n3. ${fixes[2]}\n\nGet roasted at https://roastly.app 😭🙏🥀`;
+    const textToCopy = `Roastly Score: ${clarityScore}/100 (${badge.text})\n\n"${killerQuote}"\n\nFull Roast:\n${roast}\n\n10-Minute Fixes:\n1. ${fixes[0]}\n2. ${fixes[1]}\n3. ${fixes[2]}\n\nGet roasted at ${siteUrl} 😭🙏🥀`;
     await navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
