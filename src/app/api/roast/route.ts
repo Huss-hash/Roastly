@@ -66,9 +66,12 @@ export async function POST(req: Request) {
     }
 
     if (!roastResult) {
+      const activeKey = process.env.LLM_API_KEY ? process.env.LLM_API_KEY.trim() : "";
+      const keyHint = activeKey ? `${activeKey.slice(0, 10)}...${activeKey.slice(-4)}` : "NOT_SET";
+
       let friendlyMessage = "Roastly is overloaded or the critique failed.";
       if (lastError?.message.includes("403")) {
-        friendlyMessage = "Nvidia API authorization failed (403). Please check your LLM_API_KEY in Cloudflare settings.";
+        friendlyMessage = `Nvidia API authorization failed (403) with key [${keyHint}]. Please verify LLM_API_KEY in Cloudflare.`;
       } else if (lastError?.message.includes("Missing or unconfigured LLM_API_KEY")) {
         friendlyMessage = "LLM_API_KEY is missing in Cloudflare environment variables.";
       }
@@ -77,6 +80,7 @@ export async function POST(req: Request) {
         {
           error: "llm_failed",
           message: friendlyMessage,
+          keyHint,
           detail: lastError?.message,
         },
         { status: 502 }
