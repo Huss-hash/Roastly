@@ -52,7 +52,6 @@ export async function POST(req: Request) {
 
     const messages = buildPrompt(extractedContent);
 
-    // Call LLM with one retry on parse failure
     let roastResult: RoastData | null = null;
     let lastError: Error | null = null;
 
@@ -67,10 +66,17 @@ export async function POST(req: Request) {
     }
 
     if (!roastResult) {
+      let friendlyMessage = "Roastly is overloaded or the critique failed.";
+      if (lastError?.message.includes("403")) {
+        friendlyMessage = "Nvidia API authorization failed (403). Please check your LLM_API_KEY in Cloudflare settings.";
+      } else if (lastError?.message.includes("Missing or unconfigured LLM_API_KEY")) {
+        friendlyMessage = "LLM_API_KEY is missing in Cloudflare environment variables.";
+      }
+
       return NextResponse.json(
         {
           error: "llm_failed",
-          message: "Roastly is overloaded or the critique failed. Try again in a bit.",
+          message: friendlyMessage,
           detail: lastError?.message,
         },
         { status: 502 }
