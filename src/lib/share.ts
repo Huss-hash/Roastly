@@ -1,5 +1,6 @@
 ﻿export function buildTwitterShareUrl(clarityScore: number, killerQuote: string, appUrl?: string): string {
-  const baseAppUrl = appUrl || process.env.NEXT_PUBLIC_APP_URL || "https://roastly.app";
+  const rawUrl = appUrl || process.env.NEXT_PUBLIC_APP_URL || "https://roastly.app";
+  const baseAppUrl = rawUrl.trim();
 
   let quoteSnippet = killerQuote.trim();
   if (quoteSnippet.length > 130) {

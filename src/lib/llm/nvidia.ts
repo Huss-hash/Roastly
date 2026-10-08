@@ -1,15 +1,19 @@
-import { ChatMessage } from "../prompts";
+﻿import { ChatMessage } from "../prompts";
 
 export async function callLLM(messages: ChatMessage[]): Promise<string> {
-  const apiKey = process.env.LLM_API_KEY;
+  const rawKey = process.env.LLM_API_KEY;
+  const apiKey = rawKey ? rawKey.trim() : "";
   if (!apiKey || apiKey === "nvapi-REPLACE_ME") {
     throw new Error("Missing or unconfigured LLM_API_KEY. Please provide your Nvidia API key in .env.");
   }
 
-  const endpoint = process.env.LLM_ENDPOINT || "https://integrate.api.nvidia.com/v1";
-  const model = process.env.LLM_MODEL || "meta/llama-3.2-11b-vision-instruct";
+  const rawEndpoint = process.env.LLM_ENDPOINT || "https://integrate.api.nvidia.com/v1";
+  const endpoint = rawEndpoint.trim().replace(/\/+$/, "");
 
-  const url = `${endpoint.replace(/\/+$/, "")}/chat/completions`;
+  const rawModel = process.env.LLM_MODEL || "meta/llama-3.2-11b-vision-instruct";
+  const model = rawModel.trim();
+
+  const url = `${endpoint}/chat/completions`;
 
   const response = await fetch(url, {
     method: "POST",
