@@ -5,7 +5,7 @@ import { RoastData } from "@/lib/parseRoast";
 import { RoastPersona } from "@/lib/prompts";
 
 interface RoastFormProps {
-  onRoastSuccess: (data: RoastData) => void;
+  onRoastSuccess: (data: RoastData, target?: string) => void;
   isLoading: boolean;
   setIsLoading: (val: boolean) => void;
 }
@@ -123,7 +123,8 @@ export function RoastForm({ onRoastSuccess, isLoading, setIsLoading }: RoastForm
         throw new Error(data.message || data.error || "Failed to generate roast.");
       }
 
-      onRoastSuccess(data as RoastData);
+      const targetLabel = mode === "url" ? url.trim() : "Pasted Landing Page Copy";
+      onRoastSuccess(data as RoastData, targetLabel);
     } catch (err: any) {
       setError(err.message || "Something went wrong while roasting. Please try again.");
     } finally {

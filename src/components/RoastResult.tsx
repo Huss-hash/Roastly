@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { RoastData } from "@/lib/parseRoast";
-import { buildTwitterShareUrl } from "@/lib/share";
+import { buildTwitterShareUrl, encodeRoastToHash } from "@/lib/share";
 
 interface RoastResultProps {
   data: RoastData;
+  target?: string;
+  isSharedView?: boolean;
   onReset: () => void;
 }
 
-export function RoastResult({ data, onReset }: RoastResultProps) {
+export function RoastResult({ data, target, isSharedView, onReset }: RoastResultProps) {
   const [copied, setCopied] = useState(false);
   const [siteUrl, setSiteUrl] = useState("https://roastly.hussnicer.workers.dev");
   const { killerQuote, roast, clarityScore, scoreReason, fixes, persona = "reels" } = data;
@@ -149,10 +151,13 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
 
   const meta = getPersonaMeta();
   const badge = meta.badge;
-  const shareUrl = buildTwitterShareUrl(clarityScore, killerQuote, siteUrl);
+  const shareTwitterUrl = buildTwitterShareUrl(data, siteUrl, target);
+
+  const hash = encodeRoastToHash(data, target);
+  const directRoastUrl = hash ? `${siteUrl}/?r=${hash}` : siteUrl;
 
   const handleCopy = async () => {
-    const textToCopy = `Roastly Score: ${clarityScore}/100 (${badge.text})\nCritic: ${meta.criticTitle}\n\n"${killerQuote}"\n\nFull Roast:\n${roast}\n\nActionable Fixes:\n1. ${fixes[0]}\n2. ${fixes[1]}\n3. ${fixes[2]}\n\nGet roasted at ${siteUrl}`;
+    const textToCopy = `Roastly Score: ${clarityScore}/100 (${badge.text})\nCritic: ${meta.criticTitle}\n\n"${killerQuote}"\n\nFull Roast:\n${roast}\n\nActionable Fixes:\n1. ${fixes[0]}\n2. ${fixes[1]}\n3. ${fixes[2]}\n\nSee full critique here: ${directRoastUrl}`;
     await navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -160,6 +165,25 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6 animate-fade-in">
+      {/* Target roasted info bar */}
+      {target && (
+        <div className="flex items-center justify-between bg-[#12121a] border border-border px-4 py-2.5 rounded-xl text-xs text-zinc-300">
+          <div className="flex items-center gap-2 truncate">
+            <span className="text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
+              Website Roasted:
+            </span>
+            <span className="font-mono text-accent2 truncate max-w-[280px] sm:max-w-md">
+              {target}
+            </span>
+          </div>
+          {isSharedView ? (
+            <span className="bg-accent/20 text-accent font-bold px-2 py-0.5 rounded border border-accent/40 text-[10px] shrink-0">
+              Shared Roast
+            </span>
+          ) : null}
+        </div>
+      )}
+
       {/* Score & Verdict Card */}
       <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
@@ -251,7 +275,7 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
         <a
-          href={shareUrl}
+          href={shareTwitterUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full sm:flex-1 py-3.5 px-5 rounded-xl font-black text-sm bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.99]"
@@ -267,7 +291,7 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
           onClick={handleCopy}
           className="w-full sm:w-auto py-3.5 px-5 rounded-xl font-semibold text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 flex items-center justify-center gap-2 transition-all"
         >
-          <span>{copied ? "✓ Copied!" : "📋 Copy Roast"}</span>
+          <span>{copied ? "✓ Link Copied!" : "📋 Copy Roast Link"}</span>
         </button>
 
         <button
@@ -275,7 +299,7 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
           onClick={onReset}
           className="w-full sm:w-auto py-3.5 px-5 rounded-xl font-medium text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/60 border border-transparent hover:border-zinc-700 transition-all"
         >
-          🔄 Roast Another
+          {isSharedView ? "🔥 Roast My Own Page" : "🔄 Roast Another"}
         </button>
       </div>
     </div>
