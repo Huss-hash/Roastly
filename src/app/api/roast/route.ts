@@ -1,17 +1,22 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { fetchPage } from "@/lib/fetchPage";
 import { extractContent } from "@/lib/extractContent";
-import { buildPrompt } from "@/lib/prompts";
+import { buildPrompt, RoastPersona } from "@/lib/prompts";
 import { callLLM } from "@/lib/llm";
 import { parseRoast, RoastData } from "@/lib/parseRoast";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { url, text } = body;
+    const { url, text, persona: rawPersona } = body;
 
     const trimmedUrl = typeof url === "string" ? url.trim() : "";
     const trimmedText = typeof text === "string" ? text.trim() : "";
+
+    const validPersona: RoastPersona =
+      rawPersona === "gordon" || rawPersona === "cynic" || rawPersona === "reels"
+        ? rawPersona
+        : "reels";
 
     if (!trimmedUrl && !trimmedText) {
       return NextResponse.json(
@@ -50,7 +55,7 @@ export async function POST(req: Request) {
       extractedContent = trimmedText;
     }
 
-    const messages = buildPrompt(extractedContent);
+    const messages = buildPrompt(extractedContent, validPersona);
 
     let roastResult: RoastData | null = null;
     let lastError: Error | null = null;
@@ -58,7 +63,7 @@ export async function POST(req: Request) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         const rawResponse = await callLLM(messages);
-        roastResult = parseRoast(rawResponse);
+        roastResult = parseRoast(rawResponse, validPersona);
         break;
       } catch (err: any) {
         lastError = err;

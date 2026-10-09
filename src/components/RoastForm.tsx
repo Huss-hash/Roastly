@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { RoastData } from "@/lib/parseRoast";
+import { RoastPersona } from "@/lib/prompts";
 
 interface RoastFormProps {
   onRoastSuccess: (data: RoastData) => void;
@@ -9,20 +10,74 @@ interface RoastFormProps {
   setIsLoading: (val: boolean) => void;
 }
 
-const ROAST_LOADING_STEPS = [
-  "Fetching landing page copy...",
-  "Analyzing headline & hero clarity...",
-  "Spotting vague buzzwords and clichés...",
-  "Sharpening the roaster's wit...",
-  "Formulating 3 high-impact 10-min fixes...",
-];
+const PERSONA_CONFIG: Record<
+  RoastPersona,
+  {
+    name: string;
+    badge: string;
+    icon: string;
+    tagline: string;
+    loadingSteps: string[];
+    activeBorder: string;
+    activeBg: string;
+  }
+> = {
+  reels: {
+    name: "Reels Funeral",
+    badge: "😭🙏🥀 Viral",
+    icon: "🥀",
+    tagline: "Top IG Reels comment holding a funeral for your conversion rate",
+    loadingSteps: [
+      "Fetching landing page copy...",
+      "Analyzing headline & secondhand embarrassment...",
+      "Spotting the holy emoji trinity 😭🙏🥀...",
+      "Summoning the top 800k liked comment...",
+      "Formulating 3 high-impact copy rewrites...",
+    ],
+    activeBorder: "border-pink-500/70",
+    activeBg: "bg-pink-950/20 text-pink-200",
+  },
+  gordon: {
+    name: "Brutal VC / Ramsay",
+    badge: "🔥 Zero Mercy",
+    icon: "🔥",
+    tagline: "Unforgiving investor & CRO auditor tearing buzzword salad to shreds",
+    loadingSteps: [
+      "Auditing landing page copy...",
+      "Scanning for delusional corporate buzzwords...",
+      "Calculating your time-to-bankruptcy...",
+      "Tasting the copy: IT'S RAW!...",
+      "Formulating 3 undeniable executive rewrites...",
+    ],
+    activeBorder: "border-amber-500/70",
+    activeBg: "bg-amber-950/20 text-amber-200",
+  },
+  cynic: {
+    name: "Cynical Buyer",
+    badge: "💸 Wallet Closed",
+    icon: "💸",
+    tagline: "Skeptical buyer who refuses to pay for another ChatGPT wrapper",
+    loadingSteps: [
+      "Inspecting landing page copy...",
+      "Detecting ChatGPT wrapper signals...",
+      "Searching for hidden pricing traps...",
+      "Drafting a free Google Sheet alternative...",
+      "Formulating 3 no-BS customer rewrites...",
+    ],
+    activeBorder: "border-emerald-500/70",
+    activeBg: "bg-emerald-950/20 text-emerald-200",
+  },
+};
 
 export function RoastForm({ onRoastSuccess, isLoading, setIsLoading }: RoastFormProps) {
   const [mode, setMode] = useState<"url" | "text">("url");
+  const [persona, setPersona] = useState<RoastPersona>("reels");
   const [url, setUrl] = useState("");
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
+
+  const currentSteps = PERSONA_CONFIG[persona].loadingSteps;
 
   useEffect(() => {
     if (!isLoading) {
@@ -30,10 +85,10 @@ export function RoastForm({ onRoastSuccess, isLoading, setIsLoading }: RoastForm
       return;
     }
     const interval = setInterval(() => {
-      setStepIndex((prev) => (prev + 1) % ROAST_LOADING_STEPS.length);
+      setStepIndex((prev) => (prev + 1) % currentSteps.length);
     }, 2200);
     return () => clearInterval(interval);
-  }, [isLoading]);
+  }, [isLoading, currentSteps.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +96,8 @@ export function RoastForm({ onRoastSuccess, isLoading, setIsLoading }: RoastForm
 
     const payload =
       mode === "url"
-        ? { url: url.trim() }
-        : { text: text.trim() };
+        ? { url: url.trim(), persona }
+        : { text: text.trim(), persona };
 
     if (mode === "url" && !payload.url) {
       setError("Please enter a valid website URL.");
@@ -78,11 +133,59 @@ export function RoastForm({ onRoastSuccess, isLoading, setIsLoading }: RoastForm
 
   return (
     <div className="w-full max-w-2xl mx-auto bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm">
+      {/* Persona Selection Header */}
+      <div className="mb-6">
+        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2.5">
+          Select Your Roast Critic Persona:
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          {(["reels", "gordon", "cynic"] as RoastPersona[]).map((p) => {
+            const cfg = PERSONA_CONFIG[p];
+            const isSelected = persona === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPersona(p)}
+                disabled={isLoading}
+                className={`text-left p-3 rounded-xl border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
+                  isSelected
+                    ? `${cfg.activeBorder} ${cfg.activeBg} shadow-lg ring-1 ring-white/10`
+                    : "bg-[#0d0d12] border-border text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-1">
+                  <span className="text-xl">{cfg.icon}</span>
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                      isSelected
+                        ? "bg-black/40 border-current"
+                        : "bg-zinc-800 text-zinc-400 border-zinc-700"
+                    }`}
+                  >
+                    {cfg.badge}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white leading-tight">{cfg.name}</div>
+                  <div className="text-[11px] text-zinc-400 mt-0.5 line-clamp-2 leading-snug">
+                    {cfg.tagline}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Mode Tabs */}
       <div className="flex bg-[#0d0d12] p-1.5 rounded-xl border border-border mb-6">
         <button
           type="button"
-          onClick={() => { setMode("url"); setError(null); }}
+          onClick={() => {
+            setMode("url");
+            setError(null);
+          }}
           className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
             mode === "url"
               ? "bg-[#20202a] text-white shadow-sm"
@@ -94,7 +197,10 @@ export function RoastForm({ onRoastSuccess, isLoading, setIsLoading }: RoastForm
         </button>
         <button
           type="button"
-          onClick={() => { setMode("text"); setError(null); }}
+          onClick={() => {
+            setMode("text");
+            setError(null);
+          }}
           className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
             mode === "text"
               ? "bg-[#20202a] text-white shadow-sm"
@@ -169,12 +275,12 @@ export function RoastForm({ onRoastSuccess, isLoading, setIsLoading }: RoastForm
           {isLoading ? (
             <div className="flex items-center gap-3">
               <div className="w-5 h-5 border-2 border-zinc-400 border-t-white rounded-full animate-spin" />
-              <span>{ROAST_LOADING_STEPS[stepIndex]}</span>
+              <span>{currentSteps[stepIndex]}</span>
             </div>
           ) : (
             <>
-              <span>🔥</span>
-              <span>Roast My Landing Page</span>
+              <span>{PERSONA_CONFIG[persona].icon}</span>
+              <span>Roast With {PERSONA_CONFIG[persona].name}</span>
             </>
           )}
         </button>

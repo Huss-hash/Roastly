@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { RoastData } from "@/lib/parseRoast";
@@ -12,7 +12,7 @@ interface RoastResultProps {
 export function RoastResult({ data, onReset }: RoastResultProps) {
   const [copied, setCopied] = useState(false);
   const [siteUrl, setSiteUrl] = useState("https://roastly.hussnicer.workers.dev");
-  const { killerQuote, roast, clarityScore, scoreReason, fixes } = data;
+  const { killerQuote, roast, clarityScore, scoreReason, fixes, persona = "reels" } = data;
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.origin) {
@@ -20,44 +20,139 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
     }
   }, []);
 
-  const getDamageBadge = (score: number) => {
-    if (score < 30) {
-      return {
-        text: "FUNERAL SERVICE ARRANGED 😭🙏🥀",
+  const getPersonaMeta = () => {
+    if (persona === "gordon") {
+      let badge = {
+        text: "IT'S RAW! PITCH REJECTED 🔥",
         color: "text-red-400 bg-red-950/60 border-red-500/60",
         scoreColor: "text-red-500 border-red-500/60 bg-red-950/40",
-        verdict: "Cooked Beyond Redemption",
+        verdict: "Unmitigated Disaster",
+      };
+      if (clarityScore >= 30 && clarityScore < 50) {
+        badge = {
+          text: "BURNING SEED CAPITAL 📉",
+          color: "text-orange-400 bg-orange-950/60 border-orange-500/60",
+          scoreColor: "text-orange-500 border-orange-500/60 bg-orange-950/40",
+          verdict: "Amateur Buzzword Salad",
+        };
+      } else if (clarityScore >= 50 && clarityScore < 75) {
+        badge = {
+          text: "PASSING ON THIS ROUND 🤷",
+          color: "text-amber-400 bg-amber-950/60 border-amber-500/60",
+          scoreColor: "text-amber-500 border-amber-500/60 bg-amber-950/40",
+          verdict: "Bland & Forgettable",
+        };
+      } else if (clarityScore >= 75) {
+        badge = {
+          text: "ACTUAL PRODUCT-MARKET FIT 🦄",
+          color: "text-emerald-400 bg-emerald-950/60 border-emerald-500/60",
+          scoreColor: "text-emerald-400 border-emerald-500/60 bg-emerald-950/40",
+          verdict: "Rare Seed Check Worthy",
+        };
+      }
+      return {
+        badge,
+        criticTitle: "🔥 Gordon Ramsay / Brutal VC Audit",
+        quoteHeader: "The VC Partner Verdict",
+        quoteSubtitle: "Tears Pitch Deck In Half",
+        quoteGradient: "from-[#20100a] via-surface to-[#1f1410] border-amber-500/60",
+        roastHeader: "The Executive Shredder Breakdown",
+        roastIcon: "🔥",
+        fixesHeader: "3 Directives Before You Pitch Another Human",
+        fixesBadge: "Save Your Moat",
       };
     }
-    if (score < 50) {
+
+    if (persona === "cynic") {
+      let badge = {
+        text: "WALLET WELDED SHUT 💸",
+        color: "text-red-400 bg-red-950/60 border-red-500/60",
+        scoreColor: "text-red-500 border-red-500/60 bg-red-950/40",
+        verdict: "Overpriced ChatGPT Wrapper",
+      };
+      if (clarityScore >= 30 && clarityScore < 50) {
+        badge = {
+          text: "FREE SPREADSHEET DOES THIS 📊",
+          color: "text-orange-400 bg-orange-950/60 border-orange-500/60",
+          scoreColor: "text-orange-500 border-orange-500/60 bg-orange-950/40",
+          verdict: "Solution In Search Of A Problem",
+        };
+      } else if (clarityScore >= 50 && clarityScore < 75) {
+        badge = {
+          text: "NOT WORTH A 45-MIN DEMO 🗓️",
+          color: "text-amber-400 bg-amber-950/60 border-amber-500/60",
+          scoreColor: "text-amber-500 border-amber-500/60 bg-amber-950/40",
+          verdict: "Typical Cloned Tool",
+        };
+      } else if (clarityScore >= 75) {
+        badge = {
+          text: "MIGHT SWIPE CREDIT CARD 💳",
+          color: "text-emerald-400 bg-emerald-950/60 border-emerald-500/60",
+          scoreColor: "text-emerald-400 border-emerald-500/60 bg-emerald-950/40",
+          verdict: "Legitimate ROI Detected",
+        };
+      }
       return {
+        badge,
+        criticTitle: "💸 The Cynical Buyer Audit",
+        quoteHeader: "The Buyer's Verdict",
+        quoteSubtitle: "Zero Dollars Spent",
+        quoteGradient: "from-[#0a1814] via-surface to-[#0d161c] border-emerald-500/60",
+        roastHeader: "The Buyer's Brutal Reality Check",
+        roastIcon: "💸",
+        fixesHeader: "3 Fixes To Convince Someone To Actually Pay You",
+        fixesBadge: "Friction Reducer",
+      };
+    }
+
+    // Default: Reels
+    let badge = {
+      text: "FUNERAL SERVICE ARRANGED 😭🙏🥀",
+      color: "text-red-400 bg-red-950/60 border-red-500/60",
+      scoreColor: "text-red-500 border-red-500/60 bg-red-950/40",
+      verdict: "Cooked Beyond Redemption",
+    };
+    if (clarityScore >= 30 && clarityScore < 50) {
+      badge = {
         text: "BRO IS FIGHTING FOR HIS LIFE 😭🙏",
         color: "text-orange-400 bg-orange-950/60 border-orange-500/60",
         scoreColor: "text-orange-500 border-orange-500/60 bg-orange-950/40",
         verdict: "Secondhand Embarrassment",
       };
-    }
-    if (score < 75) {
-      return {
+    } else if (clarityScore >= 50 && clarityScore < 75) {
+      badge = {
         text: "UNC NEEDS TO CLOSE THE LAPTOP 💀",
         color: "text-amber-400 bg-amber-950/60 border-amber-500/60",
         scoreColor: "text-amber-500 border-amber-500/60 bg-amber-950/40",
         verdict: "Mid SaaS Clone",
       };
+    } else if (clarityScore >= 75) {
+      badge = {
+        text: "RARE W (SURVIVED THE COMMENTS) 🔥",
+        color: "text-emerald-400 bg-emerald-950/60 border-emerald-500/60",
+        scoreColor: "text-emerald-400 border-emerald-500/60 bg-emerald-950/40",
+        verdict: "Valid & High Converting",
+      };
     }
     return {
-      text: "RARE W (SURVIVED THE COMMENTS) 🔥",
-      color: "text-emerald-400 bg-emerald-950/60 border-emerald-500/60",
-      scoreColor: "text-emerald-400 border-emerald-500/60 bg-emerald-950/40",
-      verdict: "Valid & High Converting",
+      badge,
+      criticTitle: "🥀 Instagram Reels Comment Section",
+      quoteHeader: "Top Comment (842k likes)",
+      quoteSubtitle: "📸 Screenshot Worthy",
+      quoteGradient: "from-[#1c1214] via-surface to-[#161622] border-accent/60",
+      roastHeader: "The Comment Section Breakdown",
+      roastIcon: "😭",
+      fixesHeader: "3 Fixes So You Don't Get Cooked Again",
+      fixesBadge: "Revive Your Conversion Rate",
     };
   };
 
-  const badge = getDamageBadge(clarityScore);
+  const meta = getPersonaMeta();
+  const badge = meta.badge;
   const shareUrl = buildTwitterShareUrl(clarityScore, killerQuote, siteUrl);
 
   const handleCopy = async () => {
-    const textToCopy = `Roastly Score: ${clarityScore}/100 (${badge.text})\n\n"${killerQuote}"\n\nFull Roast:\n${roast}\n\n10-Minute Fixes:\n1. ${fixes[0]}\n2. ${fixes[1]}\n3. ${fixes[2]}\n\nGet roasted at ${siteUrl} 😭🙏🥀`;
+    const textToCopy = `Roastly Score: ${clarityScore}/100 (${badge.text})\nCritic: ${meta.criticTitle}\n\n"${killerQuote}"\n\nFull Roast:\n${roast}\n\nActionable Fixes:\n1. ${fixes[0]}\n2. ${fixes[1]}\n3. ${fixes[2]}\n\nGet roasted at ${siteUrl}`;
     await navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -69,7 +164,7 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
       <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-black tracking-wider uppercase shadow-sm">
+            <div className="inline-flex items-center gap-1.5 rounded-full border text-xs font-black tracking-wider uppercase shadow-sm">
               <span className={`px-2.5 py-1 rounded-full border ${badge.color}`}>
                 {badge.text}
               </span>
@@ -93,15 +188,17 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
         </div>
       </div>
 
-      {/* KILLER QUOTE (Top Reels Comment Card) */}
-      <div className="relative rounded-2xl p-6 sm:p-7 bg-gradient-to-br from-[#1c1214] via-surface to-[#161622] border-2 border-accent/50 shadow-2xl">
+      {/* KILLER QUOTE CARD */}
+      <div
+        className={`relative rounded-2xl p-6 sm:p-7 bg-gradient-to-br ${meta.quoteGradient} border-2 shadow-2xl`}
+      >
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-1.5 text-accent text-xs font-bold uppercase tracking-wider">
-            <span>🥀</span>
-            <span>Top Comment (842k likes)</span>
+            <span>{meta.roastIcon}</span>
+            <span>{meta.quoteHeader}</span>
           </div>
           <span className="text-[11px] font-semibold text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700">
-            📸 Screenshot Worthy
+            {meta.quoteSubtitle}
           </span>
         </div>
         <p className="text-lg sm:text-xl font-extrabold text-white leading-snug tracking-tight">
@@ -109,12 +206,12 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
         </p>
       </div>
 
-      {/* The Full Autopsy Roast */}
+      {/* The Full Breakdown Roast */}
       <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-xl space-y-3">
         <div className="flex items-center gap-2">
-          <span className="text-xl">😭</span>
+          <span className="text-xl">{meta.roastIcon}</span>
           <h3 className="text-base font-bold text-white uppercase tracking-wider">
-            The Comment Section Breakdown
+            {meta.roastHeader}
           </h3>
         </div>
         <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
@@ -128,11 +225,11 @@ export function RoastResult({ data, onReset }: RoastResultProps) {
           <div className="flex items-center gap-2">
             <span className="text-xl">⚡</span>
             <h3 className="text-base font-bold text-white">
-              3 Fixes So You Don't Get Cooked Again
+              {meta.fixesHeader}
             </h3>
           </div>
           <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2.5 py-0.5 rounded-full">
-            Revive Your Conversion Rate
+            {meta.fixesBadge}
           </span>
         </div>
 

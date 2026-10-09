@@ -1,4 +1,7 @@
-﻿export interface RoastData {
+import { RoastPersona } from "./prompts";
+
+export interface RoastData {
+  persona?: RoastPersona;
   killerQuote: string;
   roast: string;
   clarityScore: number;
@@ -6,7 +9,7 @@
   fixes: [string, string, string];
 }
 
-export function parseRoast(raw: string): RoastData {
+export function parseRoast(raw: string, fallbackPersona: RoastPersona = "reels"): RoastData {
   let cleaned = raw.trim();
   cleaned = cleaned.replace(/^```(?:json)?\s*/i, "");
   cleaned = cleaned.replace(/\s*```$/i, "");
@@ -28,6 +31,11 @@ export function parseRoast(raw: string): RoastData {
   if (!parsed || typeof parsed !== "object") {
     throw new Error("Parsed LLM output is not an object.");
   }
+
+  const persona: RoastPersona =
+    parsed.persona === "gordon" || parsed.persona === "cynic" || parsed.persona === "reels"
+      ? parsed.persona
+      : fallbackPersona;
 
   const roast =
     typeof parsed.roast === "string" && parsed.roast.trim()
@@ -71,15 +79,16 @@ export function parseRoast(raw: string): RoastData {
     fixes.push("Replace vague buzzwords with concrete examples of what your product actually does.");
   }
   if (fixes.length < 2) {
-    fixes.push("Rewrite your H1 headline to pass the 5-second test: what is it, who is it for, and why care?");
+    fixes.push("Rewrite your H1 headline to pass the 3-second test: what is it, who is it for, and why care?");
   }
   if (fixes.length < 3) {
-    fixes.push("Turn your generic CTA button into a clear, low-friction action verb.");
+    fixes.push("Turn your high-friction CTA button into a clear, low-friction action verb.");
   }
 
   const finalFixes: [string, string, string] = [fixes[0], fixes[1], fixes[2]];
 
   return {
+    persona,
     killerQuote,
     roast,
     clarityScore,
